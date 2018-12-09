@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app)
 
 ui_file_dir = 'datahoarder-ui/dist/'
-ui_path = os.path.dirname(__file__).rstrip('datahoarder') + ui_file_dir
+ui_path = 'C:\\Users\\Simon Sorensen\\PycharmProjects\\datahoarder\\datehoarder-ui\\dist'
 
 
 class WebThread(threading.Thread):
@@ -38,19 +38,15 @@ def index():
 @app.route('/ui', methods=['GET'])
 def serve_dir_directory_index():
 
-    print(os.path.isfile(ui_path + 'index.html'))
-    print(ui_path)
-    # print(os.path.dirname(__file__).rstrip('datahoarder') + ui_file_dir + 'index.html')
-
     return send_from_directory(ui_path, 'index.html')
 
 
 @app.route('/ui/<path:path>', methods=['GET'])
 def serve_file_in_dir(path):
-    if not os.path.isfile(os.path.join(ui_file_dir, path)):
+    if not os.path.isfile(os.path.join(ui_path, path)):
         path = os.path.join(path, 'index.html')
 
-    return send_from_directory(ui_file_dir, path)
+    return send_from_directory(ui_path, path)
 
 
 @app.route('/api/get-active-sources')

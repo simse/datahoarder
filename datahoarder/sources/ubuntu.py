@@ -27,8 +27,7 @@ def info():
         'meta': {
             'id': 'fedora',
             'friendly_name': 'Ubuntu',
-            'short_description': 'It\'s Ubuntu man!',
-            'image': 'https://assets.ubuntu.com/v1/048f7fde-ubuntu_black-orange_hex.jpg'
+            'short_description': 'Downloads all available Ubuntu images.'
         },
         'args': {
             'mirror': {

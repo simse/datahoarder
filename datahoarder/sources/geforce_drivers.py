@@ -30,8 +30,7 @@ def info():
         'meta': {
             'id': 'geforce_drivers',
             'friendly_name': 'GeForce Drivers',
-            'short_description': 'Downloads all available GeForce drivers with the specified parameters.',
-            'image': 'https://gamepro.co.il/wp-content/uploads/2016/03/geforce-logo.jpg'
+            'short_description': 'Downloads all available GeForce drivers with the specified parameters.'
         },
         'args': {
             'psid': {

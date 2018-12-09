@@ -15,7 +15,7 @@
                     <vk-card>
                         <div slot="header">
                             <div class="source-image">
-                                <img :src="source.meta.image" :alt="source.meta.friendly_name" />
+                                <img :src="'http://localhost:4040/ui/img/sources/' + source.meta.id + '.png'" :alt="source.meta.friendly_name" />
                             </div>
                         </div>
 

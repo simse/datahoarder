@@ -27,8 +27,7 @@ def info():
         'meta': {
             'id': 'fedora',
             'friendly_name': 'Fedora',
-            'short_description': 'Downloads the latest Fedora releases.',
-            'image': 'https://fedoraproject.org/w/uploads/2/2d/Logo_fedoralogo.png'
+            'short_description': 'Downloads the latest Fedora releases.'
         },
         'args': {
             'mirror': {
