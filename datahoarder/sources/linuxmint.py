@@ -7,8 +7,8 @@ def run(args):
     files = {}
 
     for iso in isos:
-        # Works with current Fedora url naming
-        version = iso.split('releases/')[-1].split('/')[0]
+        # Works with current Ubuntu naming scheme e.g. ubuntu-18.04.iso
+        version = iso.lower().split('linuxmint-')[-1].split('-')[0]
 
         if version not in files:
             files[version] = [iso]
@@ -18,22 +18,22 @@ def run(args):
 
     return [
         files,
-        'Fedora'
+        'Linux Mint'
     ]
 
 
 def info():
     return {
         'meta': {
-            'id': 'fedora',
-            'friendly_name': 'Fedora',
-            'short_description': 'Downloads the latest Fedora releases.',
+            'id': 'linuxmint',
+            'friendly_name': 'Linux Mint',
+            'short_description': 'Downloads all available Limux Mint images.',
             'category': 'linux_distro'
         },
         'args': {
             'mirror': {
                 'type': 'str',
-                'default': 'http://mirror.math.princeton.edu/pub/fedora-secondary/releases/'
+                'default': 'http://mirrors.dotsrc.org/linuxmint-cd/stable/'
             }
         }
     }

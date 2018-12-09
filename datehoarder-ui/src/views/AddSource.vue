@@ -1,40 +1,85 @@
 <template>
     <div class="add-source">
+
         <vk-notification :messages.sync="messages"></vk-notification>
 
         <vk-button-link disabled type="link" v-on:click="$router.push('/')"> Go back</vk-button-link>
 
         <h1>Add source</h1>
-        <p>Welcome to the "Source Store", so to speak. Here you'll find hundreds of sources to fill your archive of data. And you can even add a custom source from sources with common patterns, if you dare.</p>
+        <p>Welcome to the "Source Store", so to speak.
+            Here you'll find hundreds of sources to fill your archive of data.
+            And you can even add a custom source from sources with common patterns, if you dare.</p>
 
-        <div class="new-sources">
-            <h3>Available sources</h3>
+        <vk-grid>
 
-            <vk-grid matched>
-                <div class="source-card uk-width-1-3@m" v-for="source in new_available_sources" v-bind:key="source.meta.id">
-                    <vk-card>
-                        <div slot="header">
-                            <div class="source-image">
-                                <img :src="'http://localhost:4040/ui/img/sources/' + source.meta.id + '.png'" :alt="source.meta.friendly_name" />
-                            </div>
+            <div class="uk-width-1-6@m">
+
+                <vk-nav>
+                    <vk-nav-item-header title="Categories"></vk-nav-item-header>
+
+                    <vk-nav-item
+                            title="All"
+                            v-on:click="change_cat(null)"
+                            :active="current_cat === null"
+                    ></vk-nav-item>
+
+                    <vk-nav-item
+                            :title="cat_friendly_name(cat)"
+                            v-on:click="change_cat(cat)"
+                            v-for="cat in categories"
+                            v-bind:key="cat"
+                            :active="current_cat === cat"
+                    ></vk-nav-item>
+                </vk-nav>
+
+            </div>
+
+            <div class="uk-width-5-6@m">
+
+
+
+                <div class="new-sources">
+                    <h3>{{ page_subtitle }}</h3>
+
+                    <vk-grid matched>
+                        <div class="source-card uk-width-1-3@m"
+                             v-for="source in sources"
+                             v-bind:key="source.meta.id">
+                            <vk-card>
+                                <div slot="header">
+                                    <div class="source-image">
+                                        <img :src="'/img/sources/' + source.meta.id + '.png'"
+                                            :alt="source.meta.friendly_name" />
+                                    </div>
+                                </div>
+
+                                <div slot="footer">
+                                    <vk-button-link type="primary"
+                                                    :ref="source.meta.id"
+                                                    v-on:click="quick_add_source(source.meta.id)"
+                                    > Add source</vk-button-link>
+                                </div>
+
+                                <vk-card-title>{{ source.meta.friendly_name }}</vk-card-title>
+                                <vk-label>{{ source.meta.category }}</vk-label>
+                                <p>{{ source.meta.short_description }}</p>
+                            </vk-card>
                         </div>
+                    </vk-grid>
 
-                        <div slot="footer">
-                            <vk-button-link disabled type="primary" :ref="source.meta.id" v-on:click="quick_add_source(source.meta.id)"> Add source</vk-button-link>
-                        </div>
-
-                        <vk-card-title>{{ source.meta.friendly_name }}</vk-card-title>
-                        <p>{{ source.meta.short_description }}</p>
-                    </vk-card>
                 </div>
-            </vk-grid>
 
-        </div>
+                <div class="loading-sources" v-if="this.available_sources === null">
+                    <vk-spinner ratio="1.5"></vk-spinner>
+                    <h3>Loading available sources...</h3>
+                </div>
 
-        <div class="loading-sources" v-if="this.available_sources === null">
-            <vk-spinner ratio="1.5"></vk-spinner>
-            <h3>Loading available sources...</h3>
-        </div>
+            </div>
+
+        </vk-grid>
+
+
+
     </div>
 </template>
 
@@ -44,11 +89,12 @@
         data() {
             return {
                 available_sources: null,
-                messages: []
+                messages: [],
+                current_cat: null
             }
         },
         computed: {
-            new_available_sources() {
+            passive_sources() {
                 let sources = []
 
                 if(this.available_sources === null) {
@@ -62,6 +108,60 @@
                 }
 
                 return sources
+            },
+
+            sources() {
+                let cat_sources = []
+
+                if(this.current_cat === null) {
+                    return this.passive_sources
+                } else {
+
+                    for(let source in this.passive_sources) {
+
+                        if(this.passive_sources[source]['meta']['category'] == this.current_cat) {
+
+                            cat_sources.push(this.passive_sources[source])
+
+                        }
+
+                    }
+
+                }
+
+                return cat_sources
+
+            },
+
+            categories() {
+
+                let cats = []
+
+                if(this.available_sources === null) {
+                    return []
+                }
+
+                for(let source in this.available_sources) {
+                    let cat = this.available_sources[source]['meta']['category']
+
+                    if(!cats.includes(cat)) {
+                        cats.push(cat)
+                    }
+
+                }
+
+                return cats
+
+            },
+
+            page_subtitle() {
+
+                if(this.current_cat === null) {
+                    return 'All available sources'
+                } else {
+                    return this.cat_friendly_name(this.current_cat) + ' sources'
+                }
+
             }
         },
         mounted() {
@@ -113,6 +213,18 @@
                         }
                     })
 
+            },
+
+            change_cat(cat) {
+
+                this.current_cat = cat
+
+            },
+
+            cat_friendly_name(cat) {
+
+                return cat.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+
             }
 
         }
@@ -131,6 +243,10 @@
 
     .uk-card-default {
         padding: 10px;
+    }
+
+    .uk-card-footer {
+        margin-top: auto;
     }
 
     .source-image {

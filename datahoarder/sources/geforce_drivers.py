@@ -30,7 +30,8 @@ def info():
         'meta': {
             'id': 'geforce_drivers',
             'friendly_name': 'GeForce Drivers',
-            'short_description': 'Downloads all available GeForce drivers with the specified parameters.'
+            'short_description': 'Downloads all available GeForce drivers with the specified parameters.',
+            'category': 'driver'
         },
         'args': {
             'psid': {

@@ -37,7 +37,7 @@ def load_static_streams(streams):
     return files
 
 
-def find_isos(url):
+def find_isos(url, ignore_keywords=[]):
     parsed_page = BeautifulSoup(requests.get(url).text, 'lxml')
     links = parsed_page.find_all('a')
     checked_links = []
@@ -53,7 +53,7 @@ def find_isos(url):
             href = links[0]
 
         # Check url against constraints
-        if verify_url_on_linux_mirror(href, url, checked_links, isos):
+        if verify_url_on_linux_mirror(href, url, checked_links, isos, ignore_keywords):
             # If link ends with iso it's a match!
             if href.endswith('.iso'):
                 isos.append(href)
@@ -89,12 +89,15 @@ def find_isos(url):
     return filtered_isos
 
 
-def verify_url_on_linux_mirror(url, base_url, ignore, isos):
+def verify_url_on_linux_mirror(url, base_url, ignore, isos, ignore_keywords):
 
     if url.endswith('.iso'):
         return True
 
     if url in ignore:
+        return False
+
+    if any(keyword in url for keyword in ignore_keywords):
         return False
 
     # Check if first character is a dot
@@ -127,7 +130,7 @@ def verify_url_on_linux_mirror(url, base_url, ignore, isos):
 
     # Mirror specific rules
     # Fedora mirror
-    if 'armhfp' in url or 'source' in url or 'os' in url or 'debug' in url:
+    if 'armhfp' in url or 'source' in url or 'debug' in url:
         return False
 
     # Ubuntu mirror

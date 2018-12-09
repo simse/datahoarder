@@ -27,7 +27,8 @@ def info():
         'meta': {
             'id': 'fedora',
             'friendly_name': 'Ubuntu',
-            'short_description': 'Downloads all available Ubuntu images.'
+            'short_description': 'Downloads all available Ubuntu images.',
+            'category': 'linux_distro'
         },
         'args': {
             'mirror': {

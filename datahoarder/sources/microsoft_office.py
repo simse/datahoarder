@@ -15,7 +15,8 @@ def info():
         'meta': {
             'id': 'microsoft_office',
             'friendly_name': 'Microsoft Office',
-            'short_description': 'Downloads Office 2016 and Office 365 ISO images.'
+            'short_description': 'Downloads Office 2016 and Office 365 ISO images.',
+            'category': 'software_iso'
         },
         'args': {
             'streams': {
