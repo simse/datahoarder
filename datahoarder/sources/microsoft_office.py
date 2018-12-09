@@ -6,7 +6,7 @@ def run(args):
     # Short generic function
     return [
         load_static_streams(args['streams']),
-        'Microsoft Office'
+        info()['meta']['friendly_name']
     ]
 
 

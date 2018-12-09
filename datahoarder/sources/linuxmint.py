@@ -18,7 +18,7 @@ def run(args):
 
     return [
         files,
-        'Linux Mint'
+        info()['meta']['friendly_name']
     ]
 
 

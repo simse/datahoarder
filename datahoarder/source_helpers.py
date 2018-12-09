@@ -9,6 +9,7 @@ import requests
 
 
 def load_static_stream(stream):
+    stream = 'static_streams/' + stream + '.json'
     # Make sure static stream exists
     if not os.path.isfile(stream):
         return False
@@ -23,9 +24,8 @@ def load_static_streams(streams):
 
     # Get all streams individually
     for stream in streams:
-        stream_path = 'static_streams/' + stream + '.json'
         stream_name = stream
-        stream = load_static_stream(stream_path)
+        stream = load_static_stream(stream)
 
         # TODO: Throw exception
         if not stream:

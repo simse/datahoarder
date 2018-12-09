@@ -3,6 +3,7 @@ import importlib
 import time
 from datahoarder.config import *
 from datahoarder.archive import *
+from datahoarder.download import remove_status_file
 
 
 class RunThread(threading.Thread):
@@ -11,6 +12,8 @@ class RunThread(threading.Thread):
         threading.Thread.__init__(self, name='RunThread')
 
     def run(self):
+        remove_status_file()
+
         while True:
             self._run()
 

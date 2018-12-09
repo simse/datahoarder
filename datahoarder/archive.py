@@ -1,6 +1,9 @@
 import os
 import wget
 
+
+from datahoarder.download import download
+
 ARCHIVE_PATH = 'Z:\\Archive\\'
 
 # Make sure archive path exists
@@ -39,13 +42,7 @@ def _files(files, location, do_download):
             print("{} NOT in archive, downloading...".format(file_name))
 
             if do_download:
-                download(location, file)
+                file_name = os.path.basename(file)
+                file_destination = ARCHIVE_PATH + location + os.sep + file_name
 
-
-def download(location, file):
-    file_name = os.path.basename(file)
-    file_destination = ARCHIVE_PATH + location + os.sep + file_name
-
-    print(file_destination)
-
-    wget.download(file, file_destination)
+                download(file, file_destination)

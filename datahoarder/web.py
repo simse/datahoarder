@@ -1,14 +1,10 @@
 import threading
-import importlib.util
-import os
-from pathlib import Path
 
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
-from datahoarder.config import *
-from datahoarder.constants import *
 from datahoarder.source import *
+from datahoarder.download import get_download_status
 
 app = Flask(__name__)
 CORS(app)
@@ -86,6 +82,11 @@ def add_source():
     save_config(config)
 
     return jsonify({'status': 'OK'})
+
+
+@app.route('/api/download-status')
+def download_status():
+    return jsonify(get_download_status())
 
 
 @app.route('/api/test')

@@ -41,29 +41,38 @@
                 <div class="new-sources">
                     <h3>{{ page_subtitle }}</h3>
 
-                    <vk-grid matched>
+                    <vk-grid matched v-vk-height-match="'.uk-card-body > div'">
                         <div class="source-card uk-width-1-3@m"
                              v-for="source in sources"
                              v-bind:key="source.meta.id">
-                            <vk-card>
-                                <div slot="header">
+                            <div class="uk-card uk-card-default">
+
+                                <div class="uk-card-header">
                                     <div class="source-image">
                                         <img :src="'/img/sources/' + source.meta.id + '.png'"
-                                            :alt="source.meta.friendly_name" />
+                                             :alt="source.meta.friendly_name" />
                                     </div>
                                 </div>
 
-                                <div slot="footer">
+                                <div class="uk-card-body">
+                                    <div>
+                                        <h3 class="uk-card-title">{{ source.meta.friendly_name }}</h3>
+
+                                        <vk-label>{{ cat_friendly_name(source.meta.category) }}</vk-label>
+
+                                        <p>{{ source.meta.short_description }}</p>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="uk-card-footer">
                                     <vk-button-link type="primary"
                                                     :ref="source.meta.id"
                                                     v-on:click="quick_add_source(source.meta.id)"
                                     > Add source</vk-button-link>
                                 </div>
-
-                                <vk-card-title>{{ source.meta.friendly_name }}</vk-card-title>
-                                <vk-label>{{ source.meta.category }}</vk-label>
-                                <p>{{ source.meta.short_description }}</p>
-                            </vk-card>
+                            </div>
                         </div>
                     </vk-grid>
 
@@ -90,7 +99,8 @@
             return {
                 available_sources: null,
                 messages: [],
-                current_cat: null
+                current_cat: null,
+                max_height: 0
             }
         },
         computed: {

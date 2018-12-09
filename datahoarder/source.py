@@ -9,6 +9,7 @@ from pathlib import Path
 
 # Datahoarder dependencies
 from datahoarder.config import *
+from datahoarder.archive import ARCHIVE_PATH
 
 
 def get_info_from_source(source_name):
@@ -57,7 +58,18 @@ def get_active_sources():
     for source_name in active_sources:
         detailed_active_sources[source_name] = {
             'config': config['sources'][source_name],
-            'source': get_info_from_source(source_name)
+            'source': get_info_from_source(source_name),
+            'size': folder_size(ARCHIVE_PATH + get_info_from_source(source_name)['meta']['friendly_name'])
         }
 
     return detailed_active_sources
+
+
+def folder_size(path='.'):
+    total = 0
+    for entry in os.scandir(path):
+        if entry.is_file():
+            total += entry.stat().st_size
+        elif entry.is_dir():
+            total += folder_size(entry.path)
+    return total

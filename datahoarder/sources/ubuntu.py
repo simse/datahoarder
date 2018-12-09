@@ -18,14 +18,14 @@ def run(args):
 
     return [
         files,
-        'Ubuntu'
+        info()['meta']['friendly_name']
     ]
 
 
 def info():
     return {
         'meta': {
-            'id': 'fedora',
+            'id': 'ubuntu',
             'friendly_name': 'Ubuntu',
             'short_description': 'Downloads all available Ubuntu images.',
             'category': 'linux_distro'

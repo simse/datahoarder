@@ -18,7 +18,7 @@ def run(args):
 
     return [
         files,
-        'Fedora'
+        info()['meta']['friendly_name']
     ]
 
 

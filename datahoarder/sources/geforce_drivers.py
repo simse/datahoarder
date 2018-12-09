@@ -21,7 +21,7 @@ def run(args):
 
     return [
         [d['downloadInfo']['DownloadURL'] for d in geforce_drivers],
-        'Geforce Drivers'
+        info()['meta']['friendly_name']
     ]
 
 

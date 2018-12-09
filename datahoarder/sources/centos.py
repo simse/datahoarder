@@ -23,7 +23,7 @@ def run(args):
 
     return [
         files,
-        'CentOS'
+        info()['meta']['friendly_name']
     ]
 
 
