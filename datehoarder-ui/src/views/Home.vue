@@ -6,10 +6,22 @@
             <div>
                 <h2>Active sources <vk-button type="primary" size="small" v-on:click="$router.push('add-source')">Add source</vk-button></h2>
 
-                <vk-table justified :data="active_sources_table">
-                    <vk-table-column title="Name" cell="name"></vk-table-column>
-                    <vk-table-column title="Size" cell="size"></vk-table-column>
-                </vk-table>
+                <table class="uk-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Size</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="source in active_sources_table" v-bind:key="source.name">
+                            <td>{{ source.name }}</td>
+                            <td>{{ source.size }}</td>
+                            <td><vk-label :type="source.status_style">{{ source.status }}</vk-label></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div>
                 <h2>Download activity</h2>
@@ -26,9 +38,10 @@
 <script>
 // @ is an alias to /src
 
+import VkTableColumn from "vuikit/src/library/table/components/table--column";
 export default {
     name: 'home',
-    components: {},
+    components: {VkTableColumn},
     data() {
         return {
             active_sources: null,
@@ -47,9 +60,18 @@ export default {
             let sources = []
 
             for(let source in this.active_sources) {
+                let this_source = this.active_sources[source]
+                let status_style = 'success'
+
+                if(this_source.status === 'checking') {
+                    status_style = ''
+                }
+
                 sources.push({
-                    name: this.active_sources[source].source.meta.friendly_name,
-                    size: this.human_bytes(this.active_sources[source].size)
+                    name: this_source.source.meta.friendly_name,
+                    size: this.human_bytes(this_source.size),
+                    status: this_source.status,
+                    status_style: status_style
                 })
             }
 

@@ -10,6 +10,21 @@ from pathlib import Path
 # Datahoarder dependencies
 from datahoarder.config import *
 from datahoarder.archive import ARCHIVE_PATH
+from datahoarder.models import SourceStatus
+
+
+def set_source_status(source, status):
+    source_status = SourceStatus.create(source=source, status=status)
+
+    return source_status.save()
+
+
+def get_source_status(source):
+    # Get the last inserted status for source
+    try:
+        return SourceStatus.select().where(SourceStatus.source == source).order_by(SourceStatus.added.desc())[0].status
+    except:
+        return 'Unknown'
 
 
 def get_info_from_source(source_name):
@@ -56,10 +71,18 @@ def get_active_sources():
     detailed_active_sources = {}
 
     for source_name in active_sources:
+        # Attempt to get folder size
+        try:
+            source_size = folder_size(ARCHIVE_PATH + get_info_from_source(source_name)['meta']['friendly_name'])
+        # If the folder doesn't exist, the source is likely brand new
+        except FileNotFoundError:
+            source_size = 0
+
         detailed_active_sources[source_name] = {
             'config': config['sources'][source_name],
             'source': get_info_from_source(source_name),
-            'size': folder_size(ARCHIVE_PATH + get_info_from_source(source_name)['meta']['friendly_name'])
+            'size': source_size,
+            'status': get_source_status(source_name)
         }
 
     return detailed_active_sources
@@ -67,9 +90,13 @@ def get_active_sources():
 
 def folder_size(path='.'):
     total = 0
+    # Get all items in directory
     for entry in os.scandir(path):
+        # Check if it's a file
         if entry.is_file():
+            # If it is, add size to total
             total += entry.stat().st_size
         elif entry.is_dir():
+            # If it is a folder run function again, recursively
             total += folder_size(entry.path)
     return total

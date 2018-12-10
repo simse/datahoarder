@@ -32,7 +32,7 @@ def process_items(location, files, do_download=True):
 
 def _files(files, location, do_download):
     for file in files:
-        file_name = os.path.basename(file)
+        file_name = os.path.basename(file).replace('%20', ' ')
         file_destination = ARCHIVE_PATH + location + os.sep + file_name
 
         if os.path.isfile(file_destination):
