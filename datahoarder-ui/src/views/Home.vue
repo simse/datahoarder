@@ -2,16 +2,17 @@
     <div class="home">
         <h1>Datahoarder</h1>
 
-        <vk-grid class="uk-child-width-1-2">
+        <vk-grid class="uk-child-width-1-2 ">
             <div>
                 <h2>Active sources <vk-button type="primary" size="small" v-on:click="$router.push('add-source')">Add source</vk-button></h2>
 
-                <table class="uk-table">
+                <table class="uk-table uk-table-justify">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Size</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -19,6 +20,11 @@
                             <td>{{ source.name }}</td>
                             <td>{{ source.size }}</td>
                             <td><vk-label :type="source.status_style">{{ source.status }}</vk-label></td>
+                            <td>
+                                <a v-on:click="remove_source(source.id)">
+                                    <vk-icon icon="trash"></vk-icon>
+                                    Remove</a>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -26,7 +32,7 @@
             <div>
                 <h2>Download activity</h2>
 
-                <vk-table :data="download_status_table">
+                <vk-table :data="download_status_table" justified>
                     <vk-table-column title="Filename" cell="filename"></vk-table-column>
                     <vk-table-column title="Progress" cell="progress"></vk-table-column>
                 </vk-table>
@@ -63,15 +69,20 @@ export default {
                 let this_source = this.active_sources[source]
                 let status_style = 'success'
 
-                if(this_source.status === 'checking') {
+                if(this_source.status === 'searching' || this_source.status === 'downloading') {
                     status_style = ''
+                }
+
+                if(this_source.status === 'Unknown') {
+                    status_style = 'warning'
                 }
 
                 sources.push({
                     name: this_source.source.meta.friendly_name,
                     size: this.human_bytes(this_source.size),
                     status: this_source.status,
-                    status_style: status_style
+                    status_style: status_style,
+                    id: this_source.source.meta.id
                 })
             }
 
@@ -84,18 +95,18 @@ export default {
                 return []
             }
 
-            let status = []
+            let statuses = []
 
-            for(let filename in this.download_status) {
+            this.download_status.forEach((status) => {
 
-                status.push({
-                    filename: filename,
-                    progress: this.download_status[filename] + '%'
+                statuses.push({
+                    filename: status['filename'],
+                    progress: status['progress'] + '%'
                 })
 
-            }
+            })
 
-            return status
+            return statuses
 
         }
     },
@@ -103,13 +114,13 @@ export default {
         refresh_server() {
 
             this.axios
-                .get('http://localhost:4040/api/get-active-sources')
+                .get('http://localhost:4040/api/get-active-sources', {timeout:1000})
                 .then((response) => {
                     this.active_sources = response.data
                 })
 
             this.axios
-                .get('http://localhost:4040/api/download-status')
+                .get('http://localhost:4040/api/download-status', {timeout:1000})
                 .then((response) => {
                     this.download_status = response.data
                 })
@@ -127,16 +138,33 @@ export default {
                 i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 
+        },
+
+        remove_source(source) {
+
+            this.axios.get('http://localhost:4040/api/remove-source', {
+                params: {
+                    source_id: source
+                }
+            }).then((response) => {
+                console.log(response)
+            })
+
         }
     },
     mounted() {
 
         this.refresh_server()
 
+        // Make sure server isn't refreshed twice or more per cycle
+        if(window.myInterval != undefined && window.myInterval != 'undefined'){
+            window.clearInterval(window.myInterval);
+        }
+
         this.$nextTick(function () {
-            window.setInterval(() => {
+            window.myInterval = window.setInterval(() => {
                 this.refresh_server()
-            }, 10000);
+            }, 1000);
         })
 
     }
@@ -145,7 +173,7 @@ export default {
 
 <style lang="scss">
     .home {
-        max-width: 1050px;
+        max-width: 1250px;
         margin: 0 auto;
     }
 </style>

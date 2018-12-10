@@ -1,7 +1,7 @@
 # Python dependencies
 import os
 import json
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin
 
 # Third-party dependencies
 from bs4 import BeautifulSoup

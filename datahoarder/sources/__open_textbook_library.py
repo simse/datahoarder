@@ -7,17 +7,13 @@ def run(args):
     requests.packages.urllib3.disable_warnings()
     otl_url = 'https://open.umn.edu/opentextbooks/'
 
-    otl = BeautifulSoup(requests.get('https://open.umn.edu/opentextbooks/subjects', verify=False).text, 'lxml')
-    subjects = otl.select('a')
-    subject_urls = []
+    subject_urls = [
+        'https://open.umn.edu/opentextbooks/subjects/accounting-finance',
+        'https://open.umn.edu/opentextbooks/subjects/business',
+        'https://open.umn.edu/opentextbooks/subjects/computer-science-information-systems'
+    ]
     known_links = []
 
-    for subject in subjects:
-        href = subject.get('href')
-
-        # This a subject site, find all books
-        if '/opentextbooks/subjects/' in href:
-            subject_urls.append(urljoin(otl_url, href))
 
     for subject in subject_urls:
         subject_page = BeautifulSoup(requests.get(subject, verify=False).text, 'lxml')
@@ -36,11 +32,11 @@ def run(args):
                 'lxml')
                 pdf_link = book_page.find('ul', class_='BookTypes').find_all('a')
 
-
                 for btn in pdf_link:
-                    pdf_href = btn.get('href').split('?')[0].replace('%20', ' ')
+                    url = btn.get('href')
+                    pdf_href = url[:url.find('?')].replace('%20', ' ')
 
-                    if 'pdf' in pdf_href and pdf_href not in known_links:
+                    if 'pdf' in pdf_href and pdf_href not in known_links and pdf_href is not '':
                         cat = subject.split('/')[-1].replace('-', ' ').title()
                         print('[OPEN TEXTBOOK LIBRARY] Found file {}'.format(pdf_href))
 

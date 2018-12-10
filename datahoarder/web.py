@@ -5,12 +5,17 @@ from flask_cors import CORS
 
 from datahoarder.source import *
 from datahoarder.download import get_download_status
+from datahoarder.run import sync
 
 app = Flask(__name__)
 CORS(app)
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 ui_file_dir = 'datahoarder-ui/dist/'
-ui_path = 'C:\\Users\\Simon Sorensen\\PycharmProjects\\datahoarder\\datehoarder-ui\\dist'
+ui_path = ui_file_dir
 
 
 class WebThread(threading.Thread):
@@ -81,12 +86,34 @@ def add_source():
     config['sources'][source] = args
     save_config(config)
 
+    sync()
+
     return jsonify({'status': 'OK'})
+
+
+@app.route('/api/remove-source')
+def delete_source():
+    source = request.args.get('source_id')
+
+    if remove_source(source):
+        return jsonify({'status': 'OK'})
+    else:
+        return error_response('SOURCE_NOT_REMOVED', 'An error happened when removing the source.')
 
 
 @app.route('/api/download-status')
 def download_status():
-    return jsonify(get_download_status())
+    if get_download_status() is {}:
+        return {}
+
+    return jsonify(get_download_status()[:10])
+
+
+@app.route('/api/sync')
+def sync_now():
+    sync()
+
+    return jsonify({'status': 'OK'})
 
 
 @app.route('/api/test')
