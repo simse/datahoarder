@@ -1,4 +1,4 @@
-import threading
+import os
 
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
@@ -10,12 +10,14 @@ from datahoarder.run import sync
 app = Flask(__name__)
 CORS(app)
 
+# Disable Flask logging
 import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-ui_file_dir = 'datahoarder-ui/dist/'
-ui_path = ui_file_dir
+# Find UI path
+ui_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+ui_path += os.path.sep + 'datahoarder-ui' + os.path.sep + 'dist'
 
 
 class WebThread(threading.Thread):
@@ -63,7 +65,10 @@ def available_sources():
 @app.route('/api/add-source')
 def add_source():
     source = request.args['source']
-    args = request.args.get('args')
+    args = None
+
+    if request.args.get('args') is not None:
+        args = json.loads(request.args.get('args'))
 
     # The following two checks are technically ignored
     if source is None:

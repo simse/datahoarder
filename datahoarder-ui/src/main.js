@@ -10,9 +10,12 @@ import '@vuikit/theme'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 
+import Toasted from 'vue-toasted';
+
 Vue.use(Vuikit)
 Vue.use(VuikitIcons)
 Vue.use(VueAxios, axios)
+Vue.use(Toasted)
 
 Vue.config.productionTip = false
 

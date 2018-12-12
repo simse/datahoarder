@@ -6,6 +6,12 @@
             <div>
                 <h2>Active sources <vk-button type="primary" size="small" v-on:click="$router.push('add-source')">Add source</vk-button></h2>
 
+                <vk-button
+                        type="link"
+                        v-on:click="sync_now()">
+                    <vk-icon icon="refresh"></vk-icon> Sync now
+                </vk-button>
+
                 <table class="uk-table uk-table-justify">
                     <thead>
                         <tr>
@@ -69,6 +75,10 @@ export default {
                 let this_source = this.active_sources[source]
                 let status_style = 'success'
 
+                if(this_source.source == undefined) {
+                    continue
+                }
+
                 if(this_source.status === 'searching' || this_source.status === 'downloading') {
                     status_style = ''
                 }
@@ -114,13 +124,13 @@ export default {
         refresh_server() {
 
             this.axios
-                .get('http://localhost:4040/api/get-active-sources', {timeout:1000})
+                .get('//' + window.location.hostname + ':4040/api/get-active-sources', {timeout:1000})
                 .then((response) => {
                     this.active_sources = response.data
                 })
 
             this.axios
-                .get('http://localhost:4040/api/download-status', {timeout:1000})
+                .get('//' + window.location.hostname + ':4040/api/download-status', {timeout:1000})
                 .then((response) => {
                     this.download_status = response.data
                 })
@@ -142,13 +152,28 @@ export default {
 
         remove_source(source) {
 
-            this.axios.get('http://localhost:4040/api/remove-source', {
+            this.axios.get('/api/remove-source', {
                 params: {
                     source_id: source
                 }
             }).then((response) => {
-                console.log(response)
+
             })
+
+        },
+
+        sync_now() {
+
+            this.axios
+                .get('/api/sync', {timeout:2000})
+                .then(() => {
+
+                    this.$toasted.show('Syncing sources', {
+                        duration: 5000,
+                        position: 'top-center'
+                    })
+
+                })
 
         }
     },
@@ -175,5 +200,6 @@ export default {
     .home {
         max-width: 1250px;
         margin: 0 auto;
+        padding-top: 50px;
     }
 </style>

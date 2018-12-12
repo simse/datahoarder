@@ -70,7 +70,10 @@
                                     <vk-button-link type="primary"
                                                     :ref="source.meta.id"
                                                     v-on:click="quick_add_source(source.meta.id)"
-                                    > Add source</vk-button-link>
+                                    >Add source</vk-button-link>
+                                    <vk-button-link type="link"
+                                                    v-on:click="add_source_modal(source.meta.id)"
+                                    >Customize</vk-button-link>
                                 </div>
                             </div>
                         </div>
@@ -83,12 +86,33 @@
                     <h3>Loading available sources...</h3>
                 </div>
 
+                <vk-modal overflow-auto :show="this.source_modal.show">
+                    <vk-modal-title slot="header">{{ this.source_modal.title }}</vk-modal-title>
+
+                    <div>
+
+                        <form>
+                            <label>
+                                Source arguments (JSON):
+                                <textarea class="uk-textarea" v-model="source_modal.args_data"></textarea>
+                            </label>
+                        </form>
+
+                    </div>
+
+                    <div slot="footer">
+
+                        <vk-button-link
+                                type="primary"
+                                v-on:click="add_source(source_modal.id, source_modal.args_data)"
+                        >Add source</vk-button-link>
+
+                    </div>
+                </vk-modal>
+
             </div>
 
         </vk-grid>
-
-
-
     </div>
 </template>
 
@@ -100,7 +124,14 @@
                 available_sources: null,
                 messages: [],
                 current_cat: null,
-                max_height: 0
+                max_height: 0,
+                source_modal: {
+                    show: false,
+                    title: '',
+                    args: {},
+                    args_data: '',
+                    id: ''
+                }
             }
         },
         computed: {
@@ -126,25 +157,17 @@
                 if(this.current_cat === null) {
                     return this.passive_sources
                 } else {
-
                     for(let source in this.passive_sources) {
-
-                        if(this.passive_sources[source]['meta']['category'] == this.current_cat) {
-
+                        if(this.passive_sources[source]['meta']['category'] === this.current_cat) {
                             cat_sources.push(this.passive_sources[source])
-
                         }
-
                     }
-
                 }
 
                 return cat_sources
-
             },
 
             categories() {
-
                 let cats = []
 
                 if(this.available_sources === null) {
@@ -157,21 +180,17 @@
                     if(!cats.includes(cat)) {
                         cats.push(cat)
                     }
-
                 }
 
                 return cats
-
             },
 
             page_subtitle() {
-
                 if(this.current_cat === null) {
                     return 'All available sources'
                 } else {
                     return this.cat_friendly_name(this.current_cat) + ' sources'
                 }
-
             }
         },
         mounted() {
@@ -181,42 +200,77 @@
         },
         methods: {
             get_available_sources() {
-
                 this.axios
-                    .get('http://localhost:4040/api/get-available-sources')
+                    .get('/api/get-available-sources')
                     .then((response) => {
                         this.available_sources = response.data
                     })
-
             },
 
             update_button(button) {
-
                 button.innerHTML = 'Added source'
                 button.classList.remove('uk-button-primary')
                 button.classList.add('uk-button-default')
                 button.classList.add('disabled')
-
             },
 
             quick_add_source(source_id) {
-
                 // Make the request
                 this.axios
-                    .get('http://localhost:4040/api/add-source', {
+                .get('/api/add-source', {
+                    params: {
+                        source: source_id
+                    }
+                })
+                .then((response) => {
+                    if(response.data.status === 'OK') {
+                        // Update button state
+                        this.update_button(this.$refs[source_id][0])
+
+                        // Show notification
+                        this.$toasted.show('Source added: ' + source_id, {
+                            duration: 5000,
+                            position: 'top-center'
+                        })
+                    } else {
+                        // Show notification
+                        this.messages.push('Source failed to add')
+                    }
+                })
+            },
+
+            add_source_modal(source_id) {
+                let source = this.available_sources.filter(obj => {
+                    return obj.meta.id === source_id
+                })[0]
+
+                let required_args = source['args']
+
+                this.source_modal.show = true
+                this.source_modal.title = 'Customize ' + source['meta']['friendly_name']
+                this.source_modal.args = required_args
+                this.source_modal.id = source_id
+            },
+
+            add_source(source_id, args) {
+
+                this.axios
+                    .get('/api/add-source', {
                         params: {
-                            source: source_id
+                            source: source_id,
+                            args: args
                         }
                     })
                     .then((response) => {
                         if(response.data.status === 'OK') {
-
                             // Update button state
                             this.update_button(this.$refs[source_id][0])
 
                             // Show notification
-                            this.messages.push('Source added')
-
+                            this.$toasted.show('Source added: ' + source_id, {
+                                duration: 5000,
+                                position: 'top-center'
+                            })
                         } else {
                             // Show notification
                             this.messages.push('Source failed to add')
