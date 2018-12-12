@@ -3,7 +3,7 @@ import os
 
 from datahoarder.download import register_download
 
-ARCHIVE_PATH = 'Z:\\Archive\\'
+ARCHIVE_PATH = os.environ.get('DH_ARCHIVE_PATH', '/archive') + os.path.sep
 
 # Make sure archive path exists
 if not os.path.exists(ARCHIVE_PATH):

@@ -4,7 +4,7 @@ Hoarding data without the fuzz. Using this beautiful app you download massive qu
 ### Welcome to the beta
 Datahoarder has no official release yet, however you are welcome to download and set up the beta. The beta should work at all times, but obviously problems could occur, so bear that in mind.
 
-While in beta, the major version will be 0. So the very first beta release is 0.1.0.
+While in beta, the UI will clearly indicate that you are running a beta.
 
 ### Installation
 You are advised to use the Docker image like so:

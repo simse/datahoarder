@@ -49,7 +49,7 @@
 
                                 <div class="uk-card-header">
                                     <div class="source-image">
-                                        <img :src="'/img/sources/' + source.meta.id + '.png'"
+                                        <img :src="'/ui/img/sources/' + source.meta.id + '.png'"
                                              :alt="source.meta.friendly_name" />
                                     </div>
                                 </div>
@@ -201,7 +201,7 @@
         methods: {
             get_available_sources() {
                 this.axios
-                    .get('/api/get-available-sources')
+                    .get(this.datahoarder_url + 'get-available-sources')
                     .then((response) => {
                         this.available_sources = response.data
                     })
@@ -217,7 +217,7 @@
             quick_add_source(source_id) {
                 // Make the request
                 this.axios
-                .get('/api/add-source', {
+                .get(this.datahoarder_url + 'add-source', {
                     params: {
                         source: source_id
                     }
@@ -253,9 +253,8 @@
             },
 
             add_source(source_id, args) {
-
                 this.axios
-                    .get('/api/add-source', {
+                    .get(this.datahoarder_url + 'add-source', {
                         params: {
                             source: source_id,
                             args: args

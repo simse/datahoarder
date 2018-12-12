@@ -100,7 +100,6 @@ export default {
         },
 
         download_status_table() {
-
             if(this.download_status === null) {
                 return []
             }
@@ -108,29 +107,26 @@ export default {
             let statuses = []
 
             this.download_status.forEach((status) => {
-
                 statuses.push({
                     filename: status['filename'],
                     progress: status['progress'] + '%'
                 })
-
             })
 
             return statuses
-
         }
     },
     methods: {
         refresh_server() {
 
             this.axios
-                .get('//' + window.location.hostname + ':4040/api/get-active-sources', {timeout:1000})
+                .get(this.datahoarder_url + 'get-active-sources', {timeout:1000})
                 .then((response) => {
                     this.active_sources = response.data
                 })
 
             this.axios
-                .get('//' + window.location.hostname + ':4040/api/download-status', {timeout:1000})
+                .get(this.datahoarder_url + 'download-status', {timeout:1000})
                 .then((response) => {
                     this.download_status = response.data
                 })
@@ -138,7 +134,6 @@ export default {
         },
 
         human_bytes(bytes) {
-
             let decimals = 1
 
             if(bytes == 0) return '0 Bytes';
@@ -147,25 +142,19 @@ export default {
                 sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
                 i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-
         },
 
         remove_source(source) {
-
-            this.axios.get('/api/remove-source', {
+            this.axios.get(this.datahoarder_url + 'remove-source', {
                 params: {
                     source_id: source
                 }
-            }).then((response) => {
-
             })
-
         },
 
         sync_now() {
-
             this.axios
-                .get('/api/sync', {timeout:2000})
+                .get(this.datahoarder_url + 'sync', {timeout:2000})
                 .then(() => {
 
                     this.$toasted.show('Syncing sources', {
@@ -174,11 +163,9 @@ export default {
                     })
 
                 })
-
         }
     },
     mounted() {
-
         this.refresh_server()
 
         // Make sure server isn't refreshed twice or more per cycle
@@ -191,7 +178,6 @@ export default {
                 this.refresh_server()
             }, 1000);
         })
-
     }
 }
 </script>

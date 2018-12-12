@@ -2,7 +2,7 @@ import os
 import json
 
 # Check if config exists
-CONFIG_PATH = "\\\\proton\\appdata\\datahoarder\\datahoarder.json"
+CONFIG_PATH = os.environ.get('DH_CONFIG_PATH', '/config') + os.path.sep + 'datahoarder.json'
 config = None
 
 
@@ -29,5 +29,3 @@ else:
     }
 
     save_config(config)
-
-

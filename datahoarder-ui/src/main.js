@@ -19,6 +19,16 @@ Vue.use(Toasted)
 
 Vue.config.productionTip = false
 
+Vue.mixin({
+    data: function() {
+        return {
+            get datahoarder_url() {
+                return '//' + window.location.hostname + ':4040/api/'
+            }
+        }
+    }
+})
+
 new Vue({
   router,
   render: h => h(App)
