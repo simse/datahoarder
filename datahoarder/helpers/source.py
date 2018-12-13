@@ -8,6 +8,12 @@ from bs4 import BeautifulSoup
 import requests
 
 
+def find_closest_mirror(mirrors):
+
+    #TODO: Add logic
+    return mirrors[0]
+
+
 def load_static_stream(stream):
     stream = 'static_streams/' + stream + '.json'
     # Make sure static stream exists
@@ -17,6 +23,14 @@ def load_static_stream(stream):
     # Load and parse JSON
     stream = json.loads(open(stream, 'r').read())
     return stream
+
+
+def parse_args(args):
+    return json.loads(args)
+
+
+def return_args(args):
+    return json.dumps(args)
 
 
 def load_static_streams(streams):

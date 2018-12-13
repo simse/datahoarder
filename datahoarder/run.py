@@ -2,7 +2,7 @@ import threading
 import time
 
 from datahoarder.config import *
-from datahoarder.source import SourceThread
+from datahoarder.source_thread import SourceThread
 from datahoarder.models import clean_db
 
 

@@ -1,7 +1,8 @@
-from datahoarder.source_helpers import *
+from datahoarder.helpers.source import *
 
 
 def run(args):
+    args = parse_args(args)
     psid = args['psid']
     osID = args['osID']
     languageCode = args['languageCode']
@@ -19,10 +20,7 @@ def run(args):
 
     geforce_drivers = json.loads(geforce.text)['IDS']
 
-    return [
-        [d['downloadInfo']['DownloadURL'] for d in geforce_drivers],
-        info()['meta']['friendly_name']
-    ]
+    return return_args({'': [d['downloadInfo']['DownloadURL'] for d in geforce_drivers]})
 
 
 def info():

@@ -29,6 +29,8 @@ Vue.mixin({
     }
 })
 
+document.title = 'Datahoarder Beta'
+
 new Vue({
   router,
   render: h => h(App)

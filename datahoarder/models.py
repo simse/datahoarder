@@ -30,10 +30,9 @@ db.create_tables([SourceStatus, Download])
 
 def clean_db():
     try:
-        downloads = Download.select()
-
-        for d in downloads:
-            d.delete_instance()
+        # Clear out database if possible
+        downloads = Download.delete()
+        downloads.execute()
 
         statuses = SourceStatus.delete()
         statuses.execute()

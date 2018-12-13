@@ -1,7 +1,10 @@
-from datahoarder.source_helpers import *
+from datahoarder.helpers.source import *
+from datahoarder.cache import *
 
 
+@cached(cache)
 def run(args):
+    args = parse_args(args)
     mirror = args['mirror']
     isos = find_isos(mirror,
                      ['cloud', 'contrib', 'cr', 'extras',
@@ -21,10 +24,7 @@ def run(args):
         else:
             files[version].append(iso)
 
-    return [
-        files,
-        info()['meta']['friendly_name']
-    ]
+    return return_args(files)
 
 
 def info():
@@ -33,7 +33,7 @@ def info():
             'id': 'centos',
             'friendly_name': 'CentOS',
             'short_description': 'Downloads all available CentOS images, earliest version is current 3.1.',
-            'category': 'linux_distro'
+            'category': 'linux_distros'
         },
         'args': {
             'mirror': {

@@ -1,6 +1,7 @@
 # Python dependencies
 import time
 import threading
+import os
 
 # Third-party dependencies
 import requests
@@ -68,7 +69,10 @@ def get_download_status():
 
 
 def download(url, filename):
-    with open(filename, 'wb') as f:
+    original_filename = filename
+    temporary_filename = filename + '.tmp'
+
+    with open(temporary_filename, 'wb') as f:
         response = requests.get(url, stream=True)
         total = response.headers.get('content-length')
 
@@ -83,6 +87,7 @@ def download(url, filename):
                 done = int(100 * downloaded / total)
                 update_download(filename, url, progress=done)
 
+    os.rename(temporary_filename, original_filename)
     remove_download(filename)
 
 

@@ -1,13 +1,13 @@
-
-from datahoarder.source_helpers import *
+from datahoarder.helpers.source import *
 
 
 def run(args):
+    args = parse_args(args)
+
     # Short generic function
-    return [
-        load_static_streams(args['streams']),
-        info()['meta']['friendly_name']
-    ]
+    return return_args({
+        '': load_static_streams(args['streams'])
+    })
 
 
 def info():
@@ -16,7 +16,7 @@ def info():
             'id': 'microsoft_office',
             'friendly_name': 'Microsoft Office',
             'short_description': 'Downloads Office 2016 and Office 365 ISO images.',
-            'category': 'software_iso'
+            'category': 'software_isos'
         },
         'args': {
             'streams': {

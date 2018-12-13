@@ -76,16 +76,14 @@ def add_source():
 
     # If no arguments are provided, assume quick add
     if args is None:
-        source_info = get_info_from_source(source)
-
-        # Make sure source exists
-        if not source_info:
-            return error_response('SOURCE_NOT_FOUND', 'This source does not exist. Did you mistype?')
+        source_args = Source(source).arguments
 
         args = {}
 
-        for arg in source_info['args']:
-            args[arg] = source_info['args'][arg]['default']
+        for arg in source_args:
+            args[arg] = source_args[arg]['default']
+
+        Source(source).create_path()
 
     # Add to config
     config['sources'][source] = args
@@ -100,7 +98,7 @@ def add_source():
 def delete_source():
     source = request.args.get('source_id')
 
-    if remove_source(source):
+    if Source(source).remove():
         return jsonify({'status': 'OK'})
     else:
         return error_response('SOURCE_NOT_REMOVED', 'An error happened when removing the source.')

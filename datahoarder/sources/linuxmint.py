@@ -1,12 +1,14 @@
-from datahoarder.source_helpers import *
+from datahoarder.helpers.source import *
+from datahoarder.cache import *
 
 
+@cached(cache)
 def run(args):
+    args = parse_args(args)
     mirror = args['mirror']
-    isos = find_isos(mirror)
     files = {}
 
-    for iso in isos:
+    for iso in find_isos(mirror):
         # Works with current Ubuntu naming scheme e.g. ubuntu-18.04.iso
         version = iso.lower().split('linuxmint-')[-1].split('-')[0]
 
@@ -16,10 +18,7 @@ def run(args):
         else:
             files[version].append(iso)
 
-    return [
-        files,
-        info()['meta']['friendly_name']
-    ]
+    return return_args(files)
 
 
 def info():
@@ -28,7 +27,7 @@ def info():
             'id': 'linuxmint',
             'friendly_name': 'Linux Mint',
             'short_description': 'Downloads all available Limux Mint images.',
-            'category': 'linux_distro'
+            'category': 'linux_distros'
         },
         'args': {
             'mirror': {
