@@ -1,8 +1,10 @@
 import datetime
+import os
 
 from peewee import *
 
-db = SqliteDatabase('datahoarder.db')
+
+db = SqliteDatabase(os.environ.get('DH_CONFIG_PATH', '/config') + '/datahoarder.db')
 
 
 class SourceStatus(Model):
