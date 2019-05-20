@@ -1,15 +1,14 @@
 import threading
 import time
 
-from datahoarder.config import *
 from datahoarder.source_thread import SourceThread
-from datahoarder.models import clean_db
+from datahoarder.models import clean_db, SourceModel
 
 
 class RunThread(threading.Thread):
 
     def __init__(self):
-        threading.Thread.__init__(self, name='RunThread')
+        threading.Thread.__init__(self, name='RunThread', daemon=True)
 
     def run(self):
         clean_db()
@@ -22,10 +21,8 @@ class RunThread(threading.Thread):
 
 
 def sync():
-    sources = config['sources']
-
     try:
-        for source in sources:
-            SourceThread(source).start()
+        for source in SourceModel.select():
+            SourceThread(source.uid).start()
     except RuntimeError:
         pass

@@ -11,7 +11,7 @@ ARCHIVE_PATH = os.environ.get('DH_ARCHIVE_PATH', '/archive') + os.path.sep
 create_path(ARCHIVE_PATH)
 
 
-def process_items(location, files, source, do_download=True):
+def process_items(location, files, source, do_download=False):
 
     # Make sure location exists
     create_path(location)

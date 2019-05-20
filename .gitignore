@@ -3,6 +3,7 @@
 datahoarder.db
 
 datahoarder-ui/node_modules
+datahorder-ui/public
 
 *.pyc
 
@@ -15,9 +16,4 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-bin
-include
-lib
-lib64
-share
-pyvenv.cfg
+.venv

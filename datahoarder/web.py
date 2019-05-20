@@ -23,7 +23,7 @@ ui_path += os.path.sep + 'datahoarder-ui' + os.path.sep + 'dist'
 class WebThread(threading.Thread):
 
     def __init__(self):
-        threading.Thread.__init__(self, name='WebThread')
+        threading.Thread.__init__(self, name='WebThread', daemon=True)
 
     def run(self):
         app.run(host='0.0.0.0', port=4040)
@@ -76,22 +76,20 @@ def add_source():
 
     # If no arguments are provided, assume quick add
     if args is None:
-        source_args = Source(source).arguments
+        source_args = get_source_metadata(source)['args']
 
         args = {}
 
         for arg in source_args:
             args[arg] = source_args[arg]['default']
 
-        Source(source).create_path()
 
     # Add to config
-    config['sources'][source] = args
-    save_config(config)
+    source_uid = new_source(source, args)
 
-    sync()
+    # sync()
 
-    return jsonify({'status': 'OK'})
+    return jsonify({'status': 'OK', 'source_uid': source_uid})
 
 
 @app.route('/api/remove-source')

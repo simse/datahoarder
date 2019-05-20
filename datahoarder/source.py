@@ -1,4 +1,6 @@
 # Python dependencies
+import os
+import json
 import threading
 import importlib.util
 import importlib
@@ -8,12 +10,24 @@ from pathlib import Path
 
 
 # Datahoarder dependencies
-from datahoarder.config import *
 from datahoarder.archive import ARCHIVE_PATH
-from datahoarder.models import SourceStatus
+from datahoarder.models import SourceModel
 from datahoarder.download import remove_downloads_from_source
-from datahoarder.helpers.utils import folder_size, create_path
+from datahoarder.helpers.utils import folder_size, create_path, random_string
 
+
+def get_source_metadata(source_name):
+    source_module = importlib.import_module('datahoarder.sources.{}'.format(source_name))
+    module = source_module  # Save module to class to avoid further imports
+    source_info = getattr(source_module, 'info')()
+
+    return {
+        'id': source_name,
+        'friendly_name': source_info['meta']['friendly_name'],
+        'short_description': source_info['meta']['short_description'],
+        'category': source_info['meta']['category'],
+        'args': source_info['args']
+    }
 
 def get_available_sources():
     available_sources = []
@@ -41,20 +55,20 @@ def get_available_sources():
     # Execute info function in module
     for source in ret:
         source_id = source.split('.')[-1]
-        available_sources.append(Source(source_id).get_meta())
+        available_sources.append(get_source_metadata(source_id))
 
     return available_sources
 
 
 def get_active_sources():
-    active_sources = config['sources']
+    active_sources = SourceModel.select()
     detailed_active_sources = {}
 
-    for source_id in active_sources:
-        source = Source(source_id)
+    for source in active_sources:
+        source = Source(source.uid)
 
-        detailed_active_sources[source_id] = {
-            'config': source.config,
+        detailed_active_sources[source.uid] = {
+            'args': source.arguments,
             'source': source.get_meta(),
             'size': source.size_on_disk(),
             'status': source.get_status()
@@ -63,42 +77,57 @@ def get_active_sources():
     return detailed_active_sources
 
 
-# Class representing a source GOTTA REPRESENT
+def new_source(source_id, args):
+    source_model = SourceModel()
+    source_model.uid = random_string()
+    source_model.source_id = source_id
+    source_model.arguments = json.dumps(args)
+    source_model.save()
+
+    return source_model.uid
+
+
+# Class representing a source; GOTTA REPRESENT
 class Source:
     # Source module
     module = None
 
+    # Source DB model
+    model = None
+
     # Source values
+    uid = None
     id = None
     friendly_name = None
     description = None
     category = None
-    arguments = None
-    active = False
+    status = None
     config = None
+    arguments = None
 
-    def __init__(self, source_id):
-        self.id = source_id
+    def __init__(self, source_uid):
+        self.uid = source_uid
 
-        # Make sure source exists
-        if not self.exists(self.id):
-            raise ValueError('This source does not exists: {}'.format(self.id))
-
-        # Load metadata from source and config
         self.load()
 
     @staticmethod
-    def exists(source_id):
+    def exists(source_uid):
         try:
-            importlib.import_module('datahoarder.sources.{}'.format(source_id))
-        except ImportError:
+            SourceModel.get(SourceModel.uid == source_uid)
+        except Peewee.ModelDoesntExist:
             return False
 
         return True
 
     def load(self):
+        # Load metadata from database
+        self.model = SourceModel.get(SourceModel.uid == self.uid)
+        self.status = self.model.status
+        self.source_id = self.model.source_id
+        self.config = self.model.arguments
+
         # Import module
-        source_module = importlib.import_module('datahoarder.sources.{}'.format(self.id))
+        source_module = importlib.import_module('datahoarder.sources.{}'.format(self.source_id))
         self.module = source_module  # Save module to class to avoid further imports
         source_info = getattr(source_module, 'info')()
 
@@ -107,24 +136,16 @@ class Source:
         self.category = source_info['meta']['category']
         self.arguments = source_info['args']
 
-        self.active = self.id in config['sources']
-        if self.active:
-            self.config = config['sources'][self.id]
-
     def remove(self):
         # Remove all source configuration
-        try:
-            del config['sources'][self.id]
-            save_config(config)
-        except KeyError:
-            pass
+        SourceModel.get(SourceModel.uid==self.uid).delete_instance()
 
         # Remove any pending downloads
-        remove_downloads_from_source(self.id)
+        remove_downloads_from_source(self.uid)
 
         # Stop any threads related to the source
         for t in threading.enumerate():
-            if t.getName() is self.id:
+            if t.getName() is self.uid:
                 t._stop()  # TODO: Find alternative to accessing private thread function
 
         return True
@@ -139,8 +160,7 @@ class Source:
         create_path(self.path())
 
     def run(self):
-        args = json.dumps(self.config)
-        run = getattr(self.module, 'run')(args)
+        run = getattr(self.module, 'run')(self.config)
 
         return json.loads(run)
 
@@ -148,36 +168,24 @@ class Source:
         return {
             'args': self.arguments,
             'meta': {
-                'id': self.id,
+                'uid': self.uid,
                 'friendly_name': self.friendly_name,
                 'short_description': self.description,
                 'category': self.category,
-                'active': self.active
+                'status': self.status
             }
         }
 
     def get_status(self):
-        try:
-            return SourceStatus \
-                    .select() \
-                    .where(SourceStatus.source == self.id) \
-                    .order_by(
-                        SourceStatus.added.desc()
-                    )[0].status
-
-        # TODO: Change exception
-        except Exception:
-            return 'unknown'
+        return self.status
 
     def set_status(self, status='unknown'):
-        # First remove any registered statuses for the source
-        SourceStatus \
-            .delete() \
-            .where(SourceStatus.source == self.id) \
-            .execute()
+        # Set status here
+        self.status = status
 
-        # Then insert new status
-        SourceStatus.create(source=self.id, status=status).save()
+        # Update database
+        self.model.status = status
+        self.model.save()
 
     def size_on_disk(self):
         return folder_size(self.path())

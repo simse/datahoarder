@@ -44,23 +44,23 @@
                     <vk-grid matched v-vk-height-match="'.uk-card-body > div'">
                         <div class="source-card uk-width-1-3@m"
                              v-for="source in sources"
-                             v-bind:key="source.meta.id">
+                             v-bind:key="source.id">
                             <div class="uk-card uk-card-default">
 
                                 <div class="uk-card-header">
                                     <div class="source-image">
-                                        <img :src="'/ui/img/sources/' + source.meta.id + '.png'"
-                                             :alt="source.meta.friendly_name" />
+                                        <img :src="'/ui/img/sources/' + source.id + '.png'"
+                                             :alt="source.friendly_name" />
                                     </div>
                                 </div>
 
                                 <div class="uk-card-body">
                                     <div>
-                                        <h3 class="uk-card-title">{{ source.meta.friendly_name }}</h3>
+                                        <h3 class="uk-card-title">{{ source.friendly_name }}</h3>
 
-                                        <vk-label>{{ cat_friendly_name(source.meta.category) }}</vk-label>
+                                        <vk-label>{{ cat_friendly_name(source.category) }}</vk-label>
 
-                                        <p>{{ source.meta.short_description }}</p>
+                                        <p>{{ source.short_description }}</p>
                                     </div>
 
                                 </div>
@@ -68,11 +68,11 @@
 
                                 <div class="uk-card-footer">
                                     <vk-button-link type="primary"
-                                                    :ref="source.meta.id"
-                                                    v-on:click="quick_add_source(source.meta.id)"
+                                                    :ref="source.id"
+                                                    v-on:click="quick_add_source(source.id)"
                                     >Add source</vk-button-link>
                                     <vk-button-link type="link"
-                                                    v-on:click="add_source_modal(source.meta.id)"
+                                                    v-on:click="add_source_modal(source.id)"
                                     >Customize</vk-button-link>
                                 </div>
                             </div>
@@ -143,7 +143,7 @@
                 }
 
                 for(let source in this.available_sources) {
-                    if(!this.available_sources[source]['meta']['active']) {
+                    if(!this.available_sources[source]['active']) {
                         sources.push(this.available_sources[source])
                     }
                 }
@@ -158,7 +158,7 @@
                     return this.passive_sources
                 } else {
                     for(let source in this.passive_sources) {
-                        if(this.passive_sources[source]['meta']['category'] === this.current_cat) {
+                        if(this.passive_sources[source]['category'] === this.current_cat) {
                             cat_sources.push(this.passive_sources[source])
                         }
                     }
@@ -175,7 +175,7 @@
                 }
 
                 for(let source in this.available_sources) {
-                    let cat = this.available_sources[source]['meta']['category']
+                    let cat = this.available_sources[source]['category']
 
                     if(!cats.includes(cat)) {
                         cats.push(cat)
@@ -241,13 +241,13 @@
 
             add_source_modal(source_id) {
                 let source = this.available_sources.filter(obj => {
-                    return obj.meta.id === source_id
+                    return obj.id === source_id
                 })[0]
 
                 let required_args = source['args']
 
                 this.source_modal.show = true
-                this.source_modal.title = 'Customize ' + source['meta']['friendly_name']
+                this.source_modal.title = 'Customize ' + source['friendly_name']
                 this.source_modal.args = required_args
                 this.source_modal.id = source_id
             },

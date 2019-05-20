@@ -1,5 +1,7 @@
 # Python dependencies
 import os
+import random
+import string
 from pathlib import Path
 
 # Third-party dependencies
@@ -15,6 +17,11 @@ def folder_size(folder):
             total += folder_size(entry.path)
 
     return total
+
+
+def random_string(length=10):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
 
 
 def create_path(path):

@@ -8,7 +8,6 @@ import requests
 
 # Datahoarder imports
 from datahoarder.models import Download
-from datahoarder.config import config
 
 
 def update_download(filename, url, source='', progress=0):
@@ -68,7 +67,7 @@ def get_download_status():
         return {}
 
 
-def download(url, filename):
+def http_download(url, filename):
     original_filename = filename
     temporary_filename = filename + '.tmp'
 
@@ -93,7 +92,7 @@ def download(url, filename):
 
 class DownloadWatcherThread(threading.Thread):
     def __init__(self):
-        threading.Thread.__init__(self, name='DownloadWatcherThread')
+        threading.Thread.__init__(self, name='DownloadWatcherThread', daemon=True)
 
     def run(self):
         # Run loop
@@ -111,19 +110,17 @@ class DownloadWatcherThread(threading.Thread):
                 continue
 
             # Check if there are any downloads queued
-            try:
-                download_status = get_download_status()
-                if download_status is not {}:
-                    to_download = download_status[0]
+            download_status = get_download_status()
 
-                    # Start download thread
-                    download_thread = DownloadThread(
-                        url=to_download['url'],
-                        filename=to_download['filename']
-                    )
-                    download_thread.start()
-            except IndexError:
-                pass
+            if len(download_status) > 0:
+                to_download = download_status[0]
+
+                # Start download thread
+                download_thread = DownloadThread(
+                    url=to_download['url'],
+                    filename=to_download['filename']
+                )
+                download_thread.start()
 
             # Sleep for 1 second
             time.sleep(1)
@@ -132,9 +129,9 @@ class DownloadWatcherThread(threading.Thread):
 class DownloadThread(threading.Thread):
 
     def __init__(self, url, filename):
-        threading.Thread.__init__(self, name='DownloadThread')
+        threading.Thread.__init__(self, name='DownloadThread', daemon=True)
         self.url = url
         self.filename = filename
 
     def run(self):
-        download(self.url, self.filename)
+        http_download(self.url, self.filename)

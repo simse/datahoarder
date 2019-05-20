@@ -4,8 +4,8 @@ from datahoarder.cache import *
 
 @cached(cache)
 def run(args):
-    args = parse_args(args)
-    mirror = args['mirror']
+    dh = DatahoarderSource(args)
+    mirror = dh.get('mirror')
 
     versioned_files = {}
 
@@ -35,6 +35,10 @@ def info():
             'mirror': {
                 'type': 'str',
                 'default': 'http://mirror.math.princeton.edu/pub/ubuntu-iso/'
+            },
+            'test': {
+                'type': 'boolean',
+                'default': None
             }
         }
     }

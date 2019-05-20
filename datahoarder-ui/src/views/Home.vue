@@ -27,7 +27,7 @@
                             <td>{{ source.size }}</td>
                             <td><vk-label :type="source.status_style">{{ source.status }}</vk-label></td>
                             <td>
-                                <a v-on:click="remove_source(source.id)">
+                                <a v-on:click="remove_source(source.uid)">
                                     <vk-icon icon="trash"></vk-icon>
                                     Remove</a>
                             </td>
@@ -92,7 +92,7 @@ export default {
                     size: this.human_bytes(this_source.size),
                     status: this_source.status,
                     status_style: status_style,
-                    id: this_source.source.meta.id
+                    uid: this_source.source.meta.uid
                 })
             }
 

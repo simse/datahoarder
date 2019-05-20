@@ -8,6 +8,18 @@ from bs4 import BeautifulSoup
 import requests
 
 
+# The master helper class that contains all the goodies for sources
+class DatahoarderSource:
+
+    args = None
+
+    def __init__(self, args):
+        self.args = json.loads(args)
+
+    def get(self, key):
+        return self.args[key]
+
+
 def find_closest_mirror(mirrors):
 
     #TODO: Add logic

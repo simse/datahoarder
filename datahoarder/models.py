@@ -7,10 +7,11 @@ from peewee import *
 db = SqliteDatabase(os.environ.get('DH_CONFIG_PATH', '/config') + '/datahoarder.db')
 
 
-class SourceStatus(Model):
-    source = CharField()
-    status = CharField()
-    added = DateTimeField(default=datetime.datetime.now)
+class SourceModel(Model):
+    uid = CharField()
+    source_id = CharField()
+    status = CharField(default='new')
+    arguments = TextField()
 
     class Meta:
         database = db
@@ -27,7 +28,7 @@ class Download(Model):
 
 
 db.connect()
-db.create_tables([SourceStatus, Download])
+db.create_tables([Download, SourceModel])
 
 
 def clean_db():
@@ -35,9 +36,6 @@ def clean_db():
         # Clear out database if possible
         downloads = Download.delete()
         downloads.execute()
-
-        statuses = SourceStatus.delete()
-        statuses.execute()
 
     except DoesNotExist:
         return False
