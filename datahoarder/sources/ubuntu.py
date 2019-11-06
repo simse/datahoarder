@@ -29,16 +29,35 @@ def info():
             'id': 'ubuntu',
             'friendly_name': 'Ubuntu',
             'short_description': 'Downloads all available Ubuntu images.',
-            'category': 'linux_distros'
+            'category': 'linux_distros',
+            'downloader': 'http'
         },
-        'args': {
-            'mirror': {
+        'args': [
+            {
+                'name': 'mirror',
+                'friendly_name': 'Mirror',
                 'type': 'str',
                 'default': 'http://mirror.math.princeton.edu/pub/ubuntu-iso/'
             },
-            'test': {
-                'type': 'boolean',
-                'default': None
-            }
-        }
+            {
+                'name': 'version',
+                'type': 'select',
+                'default': None,
+                'multiple': True,
+                'options': [
+                    {
+                        'name': 'Yes',
+                        'value': 'y'
+                    },
+                    {
+                        'name': 'Maybe',
+                        'value': 'm'
+                    },
+                    {
+                        'name': 'No',
+                        'value': 'n'
+                    }
+                ]
+            },
+        ]
     }

@@ -3,6 +3,7 @@ import time
 
 from datahoarder.source_thread import SourceThread
 from datahoarder.models import clean_db, SourceModel
+from datahoarder.helpers.source import find_isos
 
 
 class RunThread(threading.Thread):

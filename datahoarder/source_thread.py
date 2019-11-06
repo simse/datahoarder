@@ -26,6 +26,6 @@ class SourceThread(threading.Thread):
         location = source.path()
 
         # Process items
-        process_items(location, files, source.id)
+        process_items(location, files, source.uid, True)
 
         source.set_status('synced')

@@ -22,7 +22,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="source in active_sources_table" v-bind:key="source.name">
+                        <tr v-for="source in active_sources_table" v-bind:key="source.uid">
                             <td>{{ source.name }}</td>
                             <td>{{ source.size }}</td>
                             <td><vk-label :type="source.status_style">{{ source.status }}</vk-label></td>

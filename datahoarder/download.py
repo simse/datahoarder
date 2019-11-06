@@ -26,10 +26,6 @@ def update_download(filename, url, source='', progress=0):
 
 
 def register_download(filename, url, source, progress=0):
-    # Check if source still exists before registering download
-    if source not in config['sources']:
-        return False
-
     import peewee
 
     # Make sure download doesn't already exist
@@ -60,14 +56,16 @@ def get_download_status():
 
     try:
         return [
-            {'progress': d.progress, 'filename': d.destination, 'url': d.url}
+            {'progress': d.progress, 'filename': d.destination, 'url': d.url, 'source': d.source}
             for d in Download.select()
         ]
     except peewee.OperationalError:
         return {}
 
 
-def http_download(url, filename):
+def http_download(url, filename, source_uid):
+    from datahoarder.source import Source
+
     original_filename = filename
     temporary_filename = filename + '.tmp'
 
@@ -86,8 +84,19 @@ def http_download(url, filename):
                 done = int(100 * downloaded / total)
                 update_download(filename, url, progress=done)
 
+                # Check if source still exists
+                if not Source.exists(source_uid):
+                    remove_download(filename)
+                    os.unlink(temporary_filename)
+                    return 0
+
     os.rename(temporary_filename, original_filename)
     remove_download(filename)
+
+
+def youtube_download(url, filename, source_uid):
+    
+    pass
 
 
 class DownloadWatcherThread(threading.Thread):
@@ -118,7 +127,8 @@ class DownloadWatcherThread(threading.Thread):
                 # Start download thread
                 download_thread = DownloadThread(
                     url=to_download['url'],
-                    filename=to_download['filename']
+                    filename=to_download['filename'],
+                    uid=to_download['source']
                 )
                 download_thread.start()
 
@@ -127,11 +137,22 @@ class DownloadWatcherThread(threading.Thread):
 
 
 class DownloadThread(threading.Thread):
-
-    def __init__(self, url, filename):
+    def __init__(self, url, filename, uid):
         threading.Thread.__init__(self, name='DownloadThread', daemon=True)
         self.url = url
         self.filename = filename
+        self.source_uid = uid
 
     def run(self):
-        http_download(self.url, self.filename)
+        from datahoarder.source import Source
+        source = Source(self.source_uid)
+
+        # Check which protocol the source is requesting
+        if source.downloader == 'http':
+            http_download(self.url, self.filename, self.source_uid)
+
+        elif source.downloader == 'youtube':
+            youtube_download(self.url, self.filename, self.source_uid)
+            
+        else:
+            print("Unrecognized downloader!")

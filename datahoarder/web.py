@@ -65,10 +65,17 @@ def available_sources():
 @app.route('/api/add-source')
 def add_source():
     source = request.args['source']
-    args = None
+    args = {}
 
-    if request.args.get('args') is not None:
-        args = json.loads(request.args.get('args'))
+    if len(request.args.getlist('args[]')) > 0:
+        args_list = request.args.getlist('args[]')
+
+        for a in args_list:
+            a = json.loads(a)
+            print(a)
+            args[a['name']] = a['value']
+
+
 
     # The following two checks are technically ignored
     if source is None:
@@ -80,9 +87,8 @@ def add_source():
 
         args = {}
 
-        for arg in source_args:
-            args[arg] = source_args[arg]['default']
-
+        for arg in range(len(source_args)):
+            args[source_args[arg]['name']] = source_args[arg]['default']
 
     # Add to config
     source_uid = new_source(source, args)

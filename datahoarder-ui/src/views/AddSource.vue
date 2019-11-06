@@ -35,9 +35,6 @@
             </div>
 
             <div class="uk-width-5-6@m">
-
-
-
                 <div class="new-sources">
                     <h3>{{ page_subtitle }}</h3>
 
@@ -69,11 +66,8 @@
                                 <div class="uk-card-footer">
                                     <vk-button-link type="primary"
                                                     :ref="source.id"
-                                                    v-on:click="quick_add_source(source.id)"
-                                    >Add source</vk-button-link>
-                                    <vk-button-link type="link"
                                                     v-on:click="add_source_modal(source.id)"
-                                    >Customize</vk-button-link>
+                                    >Add source</vk-button-link>
                                 </div>
                             </div>
                         </div>
@@ -90,21 +84,33 @@
                     <vk-modal-title slot="header">{{ this.source_modal.title }}</vk-modal-title>
 
                     <div>
-
                         <form>
-                            <label>
-                                Source arguments (JSON):
-                                <textarea class="uk-textarea" v-model="source_modal.args_data"></textarea>
-                            </label>
-                        </form>
+                            <div class="uk-margin" v-for="(arg, index) in this.source_modal.args" :key="arg.name">
+                                <label v-if="arg.type == 'str'">
+                                    {{ arg.friendly_name ? arg.friendly_name : arg.name }}:
 
+                                    <input type="text" class="uk-input" v-model="source_modal.args[index].value">
+                                </label>
+
+                                <label v-if="arg.type == 'boolean'">
+                                    <input class="uk-checkbox" type="checkbox" v-model="source_modal.args[index].value">&nbsp;&nbsp;{{ arg.friendly_name ? arg.friendly_name : arg.name }}
+                                </label>
+
+                                <label v-if="arg.type == 'select'">
+                                    {{ arg.friendly_name ? arg.friendly_name : arg.name }}:
+                                    <select class="uk-select" v-model="source_modal.args[index].value" :multiple="arg.multiple">
+                                        <option v-for="option in arg.options" :key="option.name" :value="option.value">{{option.name}}</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </form>
                     </div>
 
                     <div slot="footer">
 
                         <vk-button-link
                                 type="primary"
-                                v-on:click="add_source(source_modal.id, source_modal.args_data)"
+                                v-on:click="add_source(source_modal.id, source_modal.args)"
                         >Add source</vk-button-link>
 
                     </div>
@@ -129,7 +135,6 @@
                     show: false,
                     title: '',
                     args: {},
-                    args_data: '',
                     id: ''
                 }
             }
@@ -194,9 +199,7 @@
             }
         },
         mounted() {
-
             this.get_available_sources()
-
         },
         methods: {
             get_available_sources() {
@@ -245,6 +248,9 @@
                 })[0]
 
                 let required_args = source['args']
+                required_args.forEach(arg => {
+                    arg.value = arg.default
+                });
 
                 this.source_modal.show = true
                 this.source_modal.title = 'Customize ' + source['friendly_name']
@@ -279,15 +285,11 @@
             },
 
             change_cat(cat) {
-
                 this.current_cat = cat
-
             },
 
             cat_friendly_name(cat) {
-
                 return cat.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
-
             }
 
         }

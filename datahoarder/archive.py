@@ -29,11 +29,11 @@ def _files(files, location, source, do_download):
         file_destination = location + os.sep + file_name
 
         if os.path.isfile(file_destination):
-            # print("{} already in archive!".format(file_name))
+            print("{} already in archive!".format(file_name))
             pass
 
         else:
-            # print("{} NOT in archive, downloading...".format(file_name))
+            print("{} NOT in archive, downloading...".format(file_name))
 
             if do_download:
 

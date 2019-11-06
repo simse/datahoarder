@@ -8,7 +8,6 @@ def run(args):
     files = {}
 
     for sound in sound_effects:
-        # Works with current Ubuntu naming scheme e.g. ubuntu-18.04.iso
         cat = 'Uncategorized' if sound['category'] == '' else sound['category'].replace(':', '')
         location = 'http://bbcsfx.acropolis.org.uk/assets/' + sound['location']
 

@@ -29,7 +29,7 @@ Vue.mixin({
     }
 })
 
-document.title = 'Datahoarder Beta'
+document.title = 'Datahoarder'
 
 new Vue({
   router,

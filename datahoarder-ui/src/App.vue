@@ -10,6 +10,10 @@
         -moz-osx-font-smoothing: grayscale;
     }
 
+    body {
+        font-family: 'SF Pro Display',-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif !important;
+    }
+
     #nav {
         padding: 30px;
 

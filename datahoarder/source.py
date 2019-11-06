@@ -71,7 +71,8 @@ def get_active_sources():
             'args': source.arguments,
             'source': source.get_meta(),
             'size': source.size_on_disk(),
-            'status': source.get_status()
+            'status': source.get_status(),
+            'uid': source.uid
         }
 
     return detailed_active_sources
@@ -95,16 +96,6 @@ class Source:
     # Source DB model
     model = None
 
-    # Source values
-    uid = None
-    id = None
-    friendly_name = None
-    description = None
-    category = None
-    status = None
-    config = None
-    arguments = None
-
     def __init__(self, source_uid):
         self.uid = source_uid
 
@@ -114,7 +105,7 @@ class Source:
     def exists(source_uid):
         try:
             SourceModel.get(SourceModel.uid == source_uid)
-        except Peewee.ModelDoesntExist:
+        except(Exception):
             return False
 
         return True
@@ -123,17 +114,18 @@ class Source:
         # Load metadata from database
         self.model = SourceModel.get(SourceModel.uid == self.uid)
         self.status = self.model.status
-        self.source_id = self.model.source_id
+        self.id = self.model.source_id
         self.config = self.model.arguments
 
         # Import module
-        source_module = importlib.import_module('datahoarder.sources.{}'.format(self.source_id))
+        source_module = importlib.import_module('datahoarder.sources.{}'.format(self.id))
         self.module = source_module  # Save module to class to avoid further imports
         source_info = getattr(source_module, 'info')()
 
         self.friendly_name = source_info['meta']['friendly_name']
         self.description = source_info['meta']['short_description']
         self.category = source_info['meta']['category']
+        self.downloader = source_info['meta']['downloader']
         self.arguments = source_info['args']
 
     def remove(self):
@@ -142,11 +134,6 @@ class Source:
 
         # Remove any pending downloads
         remove_downloads_from_source(self.uid)
-
-        # Stop any threads related to the source
-        for t in threading.enumerate():
-            if t.getName() is self.uid:
-                t._stop()  # TODO: Find alternative to accessing private thread function
 
         return True
 
@@ -188,4 +175,7 @@ class Source:
         self.model.save()
 
     def size_on_disk(self):
-        return folder_size(self.path())
+        try:
+            return folder_size(self.path())
+        except(FileNotFoundError):
+            return 0
