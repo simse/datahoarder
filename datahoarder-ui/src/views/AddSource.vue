@@ -1,77 +1,64 @@
 <template>
     <div class="add-source">
+        <b-button variant="link" @click="$router.push('/')" class="back"><font-awesome-icon icon="arrow-left" /> Go back</b-button>
 
-        <vk-notification :messages.sync="messages"></vk-notification>
-
-        <vk-button-link disabled type="link" v-on:click="$router.push('/')"> Go back</vk-button-link>
-
-        <h1>Add source</h1>
+        <h1 class="title">Add source</h1>
         <p>Welcome to the "Source Store", so to speak.
             Here you'll find hundreds of sources to fill your archive of data.
             And you can even add a custom source from sources with common patterns, if you dare.</p>
 
-        <vk-grid>
+        <b-row>
 
-            <div class="uk-width-1-6@m">
+            <b-col cols="3">
+                <h2>Categories</h2>
 
-                <vk-nav>
-                    <vk-nav-item-header title="Categories"></vk-nav-item-header>
+                <b-nav vertical>
+                    <b-nav-item 
+                        :active="current_cat === null"
+                        @click="change_cat(null)"
+                    >All</b-nav-item>
 
-                    <vk-nav-item
-                            title="All"
-                            v-on:click="change_cat(null)"
-                            :active="current_cat === null"
-                    ></vk-nav-item>
+                    <b-nav-item
+                        v-on:click="change_cat(cat)"
+                        v-for="cat in categories"
+                        v-bind:key="cat"
+                        :active="current_cat === cat"
+                        >{{ cat_friendly_name(cat) }}</b-nav-item>
+                </b-nav>
+            </b-col>
 
-                    <vk-nav-item
-                            :title="cat_friendly_name(cat)"
-                            v-on:click="change_cat(cat)"
-                            v-for="cat in categories"
-                            v-bind:key="cat"
-                            :active="current_cat === cat"
-                    ></vk-nav-item>
-                </vk-nav>
-
-            </div>
-
-            <div class="uk-width-5-6@m">
+            <b-col cols="9">
                 <div class="new-sources">
-                    <h3>{{ page_subtitle }}</h3>
+                    <h2>{{ page_subtitle }}</h2>
 
-                    <vk-grid matched v-vk-height-match="'.uk-card-body > div'">
-                        <div class="source-card uk-width-1-3@m"
-                             v-for="source in sources"
-                             v-bind:key="source.id">
-                            <div class="uk-card uk-card-default">
+                    <b-row no-gutters v-match-heights="{el:['.source-card']}">
+                        <b-col
+                            cols="6"
+                            v-for="source in sources"
+                            v-bind:key="source.id">
 
-                                <div class="uk-card-header">
-                                    <div class="source-image">
-                                        <img :src="'/ui/img/sources/' + source.id + '.png'"
-                                             :alt="source.friendly_name" />
-                                    </div>
+                            <div class="source-card">
+                                <div class="source-image">
+                                    <img 
+                                        :src="'/ui/img/sources/' + source.id + '.png'"
+                                        :alt="source.friendly_name" />
                                 </div>
 
-                                <div class="uk-card-body">
-                                    <div>
-                                        <h3 class="uk-card-title">{{ source.friendly_name }}</h3>
+                                <div class="meta">
+                                    <h4 class="source-title">{{ source.friendly_name }}</h4>
+                                    <p class="source-desc">{{ source.short_description }}</p>
 
-                                        <vk-label>{{ cat_friendly_name(source.category) }}</vk-label>
-
-                                        <p>{{ source.short_description }}</p>
-                                    </div>
-
-                                </div>
-
-
-                                <div class="uk-card-footer">
-                                    <vk-button-link type="primary"
-                                                    :ref="source.id"
-                                                    v-on:click="add_source_modal(source.id)"
-                                    >Add source</vk-button-link>
+                                    <b-button 
+                                        pill 
+                                        variant="primary" 
+                                        size="sm"
+                                        :ref="source.id"
+                                        @click="add_source_modal(source.id)"
+                                    >Add source</b-button>
                                 </div>
                             </div>
-                        </div>
-                    </vk-grid>
+                        </b-col>
+                    </b-row>
 
                 </div>
 
@@ -80,45 +67,44 @@
                     <h3>Loading available sources...</h3>
                 </div>
 
-                <vk-modal overflow-auto :show="this.source_modal.show">
-                    <vk-modal-title slot="header">{{ this.source_modal.title }}</vk-modal-title>
+                <b-modal
+                    v-model="source_modal.show"
+                    :title="source_modal.title">
 
                     <div>
                         <form>
                             <div class="uk-margin" v-for="(arg, index) in this.source_modal.args" :key="arg.name">
-                                <label v-if="arg.type == 'str'">
-                                    {{ arg.friendly_name ? arg.friendly_name : arg.name }}:
-
-                                    <input type="text" class="uk-input" v-model="source_modal.args[index].value">
-                                </label>
+                                <b-form-group
+                                    v-if="arg.type == 'str'"
+                                    :label="arg.friendly_name ? arg.friendly_name : arg.name"
+                                    description=""
+                                >
+                                    <b-form-input
+                                        v-model="source_modal.args[index].value"
+                                        type="text"
+                                    ></b-form-input>
+                                </b-form-group>
 
                                 <label v-if="arg.type == 'boolean'">
-                                    <input class="uk-checkbox" type="checkbox" v-model="source_modal.args[index].value">&nbsp;&nbsp;{{ arg.friendly_name ? arg.friendly_name : arg.name }}
+                                    <b-form-checkbox v-model="source_modal.args[index].value">{{ arg.friendly_name ? arg.friendly_name : arg.name }}</b-form-checkbox>
                                 </label>
 
                                 <label v-if="arg.type == 'select'">
                                     {{ arg.friendly_name ? arg.friendly_name : arg.name }}:
-                                    <select class="uk-select" v-model="source_modal.args[index].value" :multiple="arg.multiple">
-                                        <option v-for="option in arg.options" :key="option.name" :value="option.value">{{option.name}}</option>
-                                    </select>
+                                    <b-form-select v-model="source_modal.args[index].value" :options="arg.options" :multiple="arg.multiple"></b-form-select>
                                 </label>
                             </div>
                         </form>
                     </div>
 
-                    <div slot="footer">
-
-                        <vk-button-link
-                                type="primary"
-                                v-on:click="add_source(source_modal.id, source_modal.args)"
-                        >Add source</vk-button-link>
-
+                    <div slot="modal-ok">
+                        <span @click="add_source(source_modal.id, source_modal.args)">Add source</span>
                     </div>
-                </vk-modal>
+                </b-modal>
 
-            </div>
+            </b-col>
 
-        </vk-grid>
+        </b-row>
     </div>
 </template>
 
@@ -128,7 +114,6 @@
         data() {
             return {
                 available_sources: null,
-                messages: [],
                 current_cat: null,
                 max_height: 0,
                 source_modal: {
@@ -237,7 +222,7 @@
                         })
                     } else {
                         // Show notification
-                        this.messages.push('Source failed to add')
+                        this.$toasted.show('Source failed to add')
                     }
                 })
             },
@@ -297,33 +282,58 @@
 </script>
 
 <style lang="scss" scoped>
-    .add-source {
-        max-width: 1250px;
-        margin: 0 auto;
+h2 {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+}
+
+.add-source {
+    max-width: 1250px;
+    margin: 0 auto;
+}
+
+.disabled {
+    pointer-events: none;
+}
+
+.loading-sources {
+    display: flex;
+    width: 100%;
+    min-height: 300px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.source-card {
+    background: #fff;
+    padding: 17px;
+    border-radius: 8px;
+    box-shadow: 0px 7px 20px 0px rgba(0,5,61,0.05);
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    min-height: 155px;
+
+    .btn {
+        padding: 2px 8px;
     }
 
-    .disabled {
-        pointer-events: none;
-    }
-
-    .uk-card-default {
-        padding: 10px;
-    }
-
-    .uk-card-footer {
-        margin-top: auto;
+    .source-title {
+        font-size: 1.1rem;
     }
 
     .source-image {
-        padding: 15px 50px;
-    }
+        margin-right: 20px;
 
-    .loading-sources {
-        display: flex;
-        width: 100%;
-        min-height: 300px;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
+        img {
+            max-height: 80px;
+        }
     }
+}
+
+.back {
+    padding-left: 0px;
+    margin: 20px 0;
+}
 </style>

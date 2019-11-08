@@ -20,8 +20,10 @@ class SourceModel(Model):
 class Download(Model):
     url = CharField()
     destination = CharField()
+    filename = CharField()
     progress = IntegerField(default=0)
     source = CharField()
+    downloader = CharField()
 
     class Meta:
         database = db

@@ -12,7 +12,6 @@ create_path(ARCHIVE_PATH)
 
 
 def process_items(location, files, source, do_download=False):
-
     # Make sure location exists
     create_path(location)
 
@@ -25,16 +24,21 @@ def process_items(location, files, source, do_download=False):
 
 def _files(files, location, source, do_download):
     for file in files:
-        file_name = os.path.basename(file).replace('%20', ' ')
-        file_destination = location + os.sep + file_name
+        if file['type'] == 'http':
+            file = file['url']
+            file_name = os.path.basename(file).replace('%20', ' ')
+            file_destination = location + os.sep + file_name
 
-        if os.path.isfile(file_destination):
-            print("{} already in archive!".format(file_name))
-            pass
+            if os.path.isfile(file_destination):
+                print("{} already in archive!".format(file_name))
+                pass
 
-        else:
-            print("{} NOT in archive, downloading...".format(file_name))
+            else:
+                print("{} NOT in archive, downloading...".format(file_name))
 
-            if do_download:
+                if do_download:
 
-                register_download(file_destination, file, source)
+                    register_download(file_destination, file_name, file, source, downloader='http')
+
+        elif file['type'] == 'youtube':
+            register_download(location, file['url'], file['url'], source, downloader='youtube')

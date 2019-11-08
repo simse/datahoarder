@@ -125,7 +125,6 @@ class Source:
         self.friendly_name = source_info['meta']['friendly_name']
         self.description = source_info['meta']['short_description']
         self.category = source_info['meta']['category']
-        self.downloader = source_info['meta']['downloader']
         self.arguments = source_info['args']
 
     def remove(self):
@@ -136,6 +135,12 @@ class Source:
         remove_downloads_from_source(self.uid)
 
         return True
+
+    def name(self):
+        try:
+            return getattr(self.module, 'name')(self.config)
+        except(AttributeError):
+            return self.friendly_name
 
     def path(self):
         category = self.category.replace('_', ' ').title()
@@ -157,6 +162,7 @@ class Source:
             'meta': {
                 'uid': self.uid,
                 'friendly_name': self.friendly_name,
+                'unique_name': self.name(),
                 'short_description': self.description,
                 'category': self.category,
                 'status': self.status

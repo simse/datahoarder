@@ -52,6 +52,11 @@ def serve_file_in_dir(path):
     return send_from_directory(ui_path, path)
 
 
+@app.route('/api/')
+def ping():
+    return jsonify({})
+
+
 @app.route('/api/get-active-sources')
 def active_sources():
     return jsonify(get_active_sources())

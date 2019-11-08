@@ -15,10 +15,10 @@ def run(args):
         version = iso.split('/ubuntu-')[-1].split('-')[0]
 
         if version not in versioned_files:
-            versioned_files[version] = [iso]
+            versioned_files[version] = [{'type': 'http', 'url': iso}]
 
         else:
-            versioned_files[version].append(iso)
+            versioned_files[version].append({'type': 'http', 'url': iso})
 
     return return_args(versioned_files)
 
@@ -29,8 +29,7 @@ def info():
             'id': 'ubuntu',
             'friendly_name': 'Ubuntu',
             'short_description': 'Downloads all available Ubuntu images.',
-            'category': 'linux_distros',
-            'downloader': 'http'
+            'category': 'linux_distros'
         },
         'args': [
             {
@@ -40,21 +39,25 @@ def info():
                 'default': 'http://mirror.math.princeton.edu/pub/ubuntu-iso/'
             },
             {
+                'name': 'Be a poopyhead?',
+                'type': 'boolean'
+            },
+            {
                 'name': 'version',
                 'type': 'select',
                 'default': None,
                 'multiple': True,
                 'options': [
                     {
-                        'name': 'Yes',
+                        'text': 'Yes',
                         'value': 'y'
                     },
                     {
-                        'name': 'Maybe',
+                        'text': 'Maybe',
                         'value': 'm'
                     },
                     {
-                        'name': 'No',
+                        'text': 'No',
                         'value': 'n'
                     }
                 ]

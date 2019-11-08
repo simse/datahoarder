@@ -8,41 +8,43 @@ import requests
 
 # Datahoarder imports
 from datahoarder.models import Download
+from datahoarder.logger import logger
 
 
-def update_download(filename, url, source='', progress=0):
+def update_download(destination, filename, url, source='', progress=-1, downloader='http'):
     import peewee
 
     try:
         # Attempt to fetch record from database
-        download_status = Download.get(Download.destination == filename)
+        download_status = Download.get(Download.filename == filename)
     except peewee.DoesNotExist:
         # If it's not there, create it
-        download_status = Download.create(destination=filename, url=url, source=source)
+        download_status = Download.create(destination=destination, filename=filename, url=url, source=source, downloader=downloader)
 
     # Update record
     download_status.progress = progress
     download_status.save()
 
 
-def register_download(filename, url, source, progress=0):
+def register_download(destination, filename, url, source, progress=-1, downloader='http'):
     import peewee
 
     # Make sure download doesn't already exist
     try:
         Download.get(Download.destination == filename)
     except peewee.DoesNotExist:
-        update_download(filename, url, source, progress)
+        update_download(destination, filename, url, source, progress, downloader)
 
 
 def remove_download(filename):
-    # Get status from Database
-    download_status = Download.get(Download.destination == filename)
-
-    # Only attempt to remove if it exists
-    if download_status is not None:
+    import peewee
+    try:
+        # Get status from Database
+        download_status = Download.get(Download.filename == filename)
         download_status.delete_instance()
 
+    except(peewee.OperationalError):
+        pass
 
 def remove_downloads_from_source(source):
     downloads = Download.delete().where(Download.source == source)
@@ -56,7 +58,13 @@ def get_download_status():
 
     try:
         return [
-            {'progress': d.progress, 'filename': d.destination, 'url': d.url, 'source': d.source}
+            {
+                'progress': d.progress,
+                'filename': d.destination,
+                'url': d.url,
+                'source': d.source,
+                'downloader': d.downloader
+            }
             for d in Download.select()
         ]
     except peewee.OperationalError:
@@ -82,21 +90,46 @@ def http_download(url, filename, source_uid):
                 downloaded += len(data)
                 f.write(data)
                 done = int(100 * downloaded / total)
-                update_download(filename, url, progress=done)
+                update_download(filename, os.path.basename(filename), url, progress=done)
 
                 # Check if source still exists
                 if not Source.exists(source_uid):
-                    remove_download(filename)
+                    remove_download(os.path.basename(filename))
                     os.unlink(temporary_filename)
                     return 0
 
     os.rename(temporary_filename, original_filename)
-    remove_download(filename)
+    remove_download(os.path.basename(filename))
 
 
-def youtube_download(url, filename, source_uid):
-    
-    pass
+def update_youtube_progress(d):
+    if d['status'] == 'finished':
+        remove_download(d['filename'])
+
+    if d['status'] == 'downloading':
+        update_download('', d['filename'], d['filename'], progress=round(float(d['_percent_str'].replace('%', '').strip())), downloader='youtube')
+
+
+def youtube_download(url, path, source_uid):
+    import youtube_dl
+
+    ydl_opts = {
+        'format': 'bestvideo/best',
+        'outtmpl': os.path.join(path, '%(title)s.%(ext)s'),
+        'progress_hooks': [update_youtube_progress],
+    }
+
+    ydl = youtube_dl.YoutubeDL(ydl_opts)
+    filename = ydl.prepare_filename(ydl.extract_info(url, download=False))
+    remove_download(url)
+
+    if(os.path.exists(filename)):
+        pass
+    else:
+        update_download(path, filename, url, progress=0, downloader='youtube', source=source_uid)
+        logger.info("Downloading YouTube video: {}".format(url))
+        ydl.download([url])
+        
 
 
 class DownloadWatcherThread(threading.Thread):
@@ -128,7 +161,8 @@ class DownloadWatcherThread(threading.Thread):
                 download_thread = DownloadThread(
                     url=to_download['url'],
                     filename=to_download['filename'],
-                    uid=to_download['source']
+                    uid=to_download['source'],
+                    downloader=to_download['downloader']
                 )
                 download_thread.start()
 
@@ -137,21 +171,19 @@ class DownloadWatcherThread(threading.Thread):
 
 
 class DownloadThread(threading.Thread):
-    def __init__(self, url, filename, uid):
+    def __init__(self, url, filename, uid, downloader):
         threading.Thread.__init__(self, name='DownloadThread', daemon=True)
         self.url = url
         self.filename = filename
         self.source_uid = uid
+        self.downloader = downloader
 
     def run(self):
-        from datahoarder.source import Source
-        source = Source(self.source_uid)
-
         # Check which protocol the source is requesting
-        if source.downloader == 'http':
+        if self.downloader == 'http':
             http_download(self.url, self.filename, self.source_uid)
 
-        elif source.downloader == 'youtube':
+        elif self.downloader == 'youtube':
             youtube_download(self.url, self.filename, self.source_uid)
             
         else:
